@@ -90,3 +90,17 @@ router.post('/login', async (req, res) => {
     });
 })
 
+//me
+router.get('/me', async (req, res) => {
+    //TODO: use middleware to return data of of logged in user only.
+    res.json(req.user);
+})
+
+//login
+router.post('/logout', (req, res) => {
+    //set the `token` cookie with a blank string, and a very short expiry age.
+    res.cookie('token', '', { ...cookieOptions, maxAge: 1 });
+    return res.json({ message: 'logged Out Successfully' });
+});
+
+export default router;
