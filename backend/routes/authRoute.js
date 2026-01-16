@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
-import { isValidElement } from 'react';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
         return res.status(400).json({
-            message: 'Please Provide all required fields'
+            "message" : "Please Provide all required fields"
         })
     }
 
@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
     const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (userExists.rows.length > 0) {
-        return res.status(400).json({ message: 'User Already Exists' });
+        return res.status(400).json({ "message": "User Already Exists" });
     }
 
     //now that we know we have a new user, start hashing their password : 
@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
 
     //create new user into the DB : 
     const newUser = await pool.query(
-        'INSERT INTO users (username, email, password) values ($1, $2, $3) RETURNING id, name, email', [username, email, hashedPassword]
+        'INSERT INTO users (username, email, password) values ($1, $2, $3) RETURNING id, username   , email', [username, email, hashedPassword]
     );
 
     //generate jwt token with the same id as the entry int the database
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
 })
 
 //me
-router.get('/me', async (req, res) => {
+router.get('/me', protect , async (req, res) => {
     //TODO: use middleware to return data of of logged in user only.
     res.json(req.user);
 })
